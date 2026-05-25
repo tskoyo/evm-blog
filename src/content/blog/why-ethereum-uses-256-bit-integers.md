@@ -19,7 +19,7 @@ The answer starts with a more fundamental question: **why can't blockchains use 
 
 Try this in Rust:
 
-​```rust
+​```
 fn main() {
     let a: f64 = 0.1;
     let b: f64 = 0.2;
@@ -68,7 +68,7 @@ There's no `u256` type in Rust. So I had to build one.
 
 The natural representation is 32 bytes:
 
-​```rust
+​```
 pub struct U256(pub [u8; 32]);
 ​```
 
@@ -88,7 +88,7 @@ This is just base 256. Same as decimal, but each "digit" can be 0–255 instead 
 
 Adding two U256s is the same as long addition by hand, but in base 256. You start from the rightmost byte and carry any overflow leftward:
 
-​```rust
+​```
 pub fn wrapping_add(self, other: Self) -> Self {
     let mut result = [0u8; 32];
     let mut carry: u16 = 0;
