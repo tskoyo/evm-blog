@@ -5,7 +5,7 @@ pubDate: 'May 25 2026'
 heroImage: '../../assets/blog-placeholder-1.jpg'
 ---
 
-A few weeks ago I decided to learn how the Ethereum Virtual Machine actually works. Not the "call this function with ethers.js" level — the actual byte-level execution. I'm going to EthGlobal Lisbon in July and I want to build an MEV bot in Rust, which means I need to understand the EVM at a level most blockchain developers never reach.
+A few weeks ago I decided to learn how the Ethereum Virtual Machine actually works. Not the "call this function with ethers.js" level — the actual byte-level execution. I'm going to EthGlobal Lisbon in July and I want to build an MEV bot in Rust, which means I need to understand the EVM at a deeper level.
 
 The first thing I had to build was a 256-bit integer type. I assumed it would be a five-minute thing. It took me a full day.
 
@@ -19,14 +19,14 @@ The answer starts with a more fundamental question: **why can't blockchains use 
 
 Try this in Rust:
 
-​```
+```rust
 fn main() {
     let a: f64 = 0.1;
     let b: f64 = 0.2;
     println!("{}", a + b);          // 0.30000000000000004
     println!("{}", a + b == 0.3);   // false
 }
-​```
+```
 
 This isn't a Rust bug. It's how IEEE 754 floating-point works on every CPU in the world. Most decimal numbers can't be represented exactly in binary, so you get rounding errors.
 
@@ -68,27 +68,27 @@ There's no `u256` type in Rust. So I had to build one.
 
 The natural representation is 32 bytes:
 
-​```
+```rust
 pub struct U256(pub [u8; 32]);
-​```
+```
 
 Each byte holds a value from 0 to 255. Together, 32 bytes represent a single 256-bit number. The leftmost byte holds the most significant bits, the rightmost byte holds the least significant.
 
 This is just base 256. Same as decimal, but each "digit" can be 0–255 instead of 0–9. The number 665537 in base 256 is `[..., 10, 39, 193]`:
 
-​```
+```
 10  × 256² = 655360
 39  × 256¹ =   9984
 193 × 256⁰ =    193
               ──────
               665537 ✓
-​```
+```
 
 ## The hard part: addition
 
 Adding two U256s is the same as long addition by hand, but in base 256. You start from the rightmost byte and carry any overflow leftward:
 
-​```
+```rust
 pub fn wrapping_add(self, other: Self) -> Self {
     let mut result = [0u8; 32];
     let mut carry: u16 = 0;
@@ -101,7 +101,7 @@ pub fn wrapping_add(self, other: Self) -> Self {
 
     U256(result)
 }
-​```
+```
 
 The trick is using `u16` to catch overflow. The maximum value of `sum` is `255 + 255 + 1 = 511`, which fits in a `u16` but not a `u8`. We keep the low 8 bits (`sum as u8`) as the result for this byte, and shift the rest right by 8 (`sum >> 8`) to get the carry — which is at most 1.
 
