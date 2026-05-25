@@ -2,7 +2,7 @@
 title: 'Why Ethereum uses 256-bit integers (and how I built one in Rust)'
 description: 'Building U256 from scratch taught me more about the EVM than any Solidity tutorial ever did.'
 pubDate: 'May 25 2026'
-heroImage: '/blog-placeholder-1.jpg'
+heroImage: '../blog-placeholder-1.jpg'
 ---
 
 A few weeks ago I decided to learn how the Ethereum Virtual Machine actually works. Not the "call this function with ethers.js" level — the actual byte-level execution. I'm going to EthGlobal Lisbon in July and I want to build an MEV bot in Rust, which means I need to understand the EVM at a level most blockchain developers never reach.
