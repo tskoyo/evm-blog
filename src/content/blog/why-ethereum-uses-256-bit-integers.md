@@ -7,7 +7,7 @@ heroImage: '../../assets/blog-placeholder-1.jpg'
 
 A few weeks ago I decided to learn how the Ethereum Virtual Machine actually works. Not the "call this function with ethers.js" level — the actual byte-level execution. I'm going to EthGlobal Lisbon in July and I want to build an MEV bot in Rust, which means I need to understand the EVM at a deeper level.
 
-The first thing I had to build was a 256-bit integer type. I assumed it would be a five-minute thing. It took me a full day.
+The first thing I had to build was a 256-bit integer type. I assumed it would be a 1-hour thing. It took me a full day.
 
 Here's what I learned, and why it matters.
 
