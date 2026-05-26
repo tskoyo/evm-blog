@@ -32,7 +32,17 @@ The answer is wei — Ethereum's smallest unit. 1 ETH equals `10^18` wei. So `2.
 
 ## Why 256 bits specifically
 
-// here we can use the same text but explaining what `keccak256` is.
+Now I had my answer for "why integers." But why such big integers?
+A `u64` maxes out at about `1.8 × 10^19`. That's barely enough to hold a single ETH whale's balance in wei. Some token amounts can be even larger. We need more bits.
+
+But the deeper reason is this: `Ethereum's word size matches its hash size`.
+The EVM uses a hash function called `Keccak256`. A hash function takes any input — a transaction, a contract's bytecode, a storage key, whatever — and produces a fixed-size fingerprint. No matter what you feed it, the output is always exactly 256 bits. Change one byte of the input and the output looks completely different. You can't reverse it, and it's practically impossible to find two inputs that produce the same output.
+
+The EVM uses `Keccak256` everywhere. It's how contract addresses are derived, how storage slot locations are calculated for mappings, how transactions are identified, and how block headers are linked together in Merkle trees. Hashes are the glue that holds Ethereum together.
+By making the native integer type also 256 bits, a hash fits exactly in one stack slot, one storage slot, one memory word. No splitting, no padding, no special cases. This keeps the EVM's internal representation symmetric and clean.
+
+Addresses being 160-bit and balances being arbitrarily large are nice bonuses, but the hash-size match is the main driver.
+
 
 ## Building U256 from scratch
 
@@ -88,4 +98,4 @@ When I started this, I thought I'd be writing code all day. Instead, most of the
 
 Honestly, this exercise made me realize how much of "blockchain development" is just calling APIs without understanding what they do underneath. Building U256 myself was the first time I felt like I actually understood what an Ethereum transaction really *is*.
 
-This is just the foundation. Next, I'll be implementing the actual EVM opcodes — ADD, MUL, SUB, the stack machine, memory, storage. The goal is to eventually use `revm` to simulate Uniswap swaps locally and build an MEV bot for EthGlobal Lisbon in July.
+This is just the foundation. Next, I'll be implementing the actual EVM opcodes — ADD, MUL, SUB, the stack machine, memory, storage. The goal is to eventually use `revm` to simulate Uniswap swaps locally and.
