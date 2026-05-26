@@ -33,15 +33,20 @@ The answer is wei — Ethereum's smallest unit. 1 ETH equals `10^18` wei. So `2.
 ## Why 256 bits specifically
 
 Now I had my answer for "why integers." But why such big integers?
-A `u64` maxes out at about `1.8 × 10^19`. That's barely enough to hold a single ETH whale's balance in wei. Some token amounts can be even larger. We need more bits.
+A u64 maxes out at about `1.8 × 10^19`. That's barely enough to hold a single ETH whale's balance in wei. Some token amounts can be even larger. We need more bits.
 
-But the deeper reason is this: `Ethereum's word size matches its hash size`.
-The EVM uses a hash function called `Keccak256`. A hash function takes any input — a transaction, a contract's bytecode, a storage key, whatever — and produces a fixed-size fingerprint. No matter what you feed it, the output is always exactly 256 bits. Change one byte of the input and the output looks completely different. You can't reverse it, and it's practically impossible to find two inputs that produce the same output.
+But the deeper reason is this: Ethereum's word size matches its hash size.
+The EVM uses a hash function called Keccak256. You feed it any input — a transaction, a contract's bytecode, a storage key — and it always spits out exactly 256 bits. Change one byte of the input and the output looks completely different. You can't reverse it, and it's practically impossible to find two inputs that produce the same output.
 
-The EVM uses `Keccak256` everywhere. It's how contract addresses are derived, how storage slot locations are calculated for mappings, how transactions are identified, and how block headers are linked together in Merkle trees. Hashes are the glue that holds Ethereum together.
-By making the native integer type also 256 bits, a hash fits exactly in one stack slot, one storage slot, one memory word. No splitting, no padding, no special cases. This keeps the EVM's internal representation symmetric and clean.
+The EVM uses it everywhere. Contract addresses, storage slot locations, transaction IDs, Merkle trees in block headers. If something needs to be identified or looked up, there's a keccak256 call behind it.
+By making the native integer type also 256 bits, a hash fits in one stack slot, one storage slot, one memory word. No splitting, no padding, no special cases.
 
-Addresses being 160-bit and balances being arbitrarily large are nice bonuses, but the hash-size match is the main driver.
+Here's why that matters in practice. Every time someone swaps tokens on Uniswap, the contract needs to look up the pair's reserves. Those reserves live in a mapping. The EVM finds their storage location by hashing the token addresses with keccak256 — one hash, one 256-bit result, one slot read.
+Now imagine the EVM used 128-bit words instead. That same hash would have to be split across two slots. Every reserve lookup would need two reads instead of one. Every write would take two writes. Extra logic to stitch the halves together.
+
+On a busy day, Uniswap alone processes tens of thousands of swaps. Multiply that overhead across every mapping access in every contract, and the cost adds up fast.
+That's the real reason U256 exists. Not just because balances can be large, but because the EVM's most fundamental operation produces 256-bit outputs. Everything is simpler when one hash equals one slot.
+
 
 
 ## Building U256 from scratch
