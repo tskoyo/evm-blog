@@ -102,4 +102,4 @@ When I started this, I thought I'd be writing code all day. Instead, most of the
 
 Honestly, this exercise made me realize how much of "blockchain development" is just calling APIs without understanding what they do underneath. Building U256 myself was the first time I felt like I actually understood what an Ethereum transaction really *is*.
 
-This is just the foundation. Next, I'll be implementing the actual EVM opcodes — ADD, MUL, SUB, the stack machine, memory, storage. The goal is to eventually use `revm` to simulate Uniswap swaps locally and.
+This is just the foundation. Next, I'll be implementing the actual EVM opcodes — ADD, MUL, SUB, the stack machine, memory, storage.
