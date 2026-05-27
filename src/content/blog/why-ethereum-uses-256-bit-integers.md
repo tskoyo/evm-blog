@@ -100,6 +100,4 @@ When I started this, I thought I'd be writing code all day. Instead, most of the
 - what U256 is and how it's built
 - what keccak256 is
 
-Honestly, this exercise made me realize how much of "blockchain development" is just calling APIs without understanding what they do underneath. Building U256 myself was the first time I felt like I actually understood what an Ethereum transaction really *is*.
-
 This is just the foundation. Next, I'll be implementing the actual EVM opcodes — ADD, MUL, SUB, the stack machine, memory, storage.
