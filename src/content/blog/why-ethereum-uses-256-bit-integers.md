@@ -33,19 +33,19 @@ The answer is wei — Ethereum's smallest unit. 1 ETH equals `10^18` wei. So `2.
 ## Why 256 bits specifically
 
 Now I had my answer for "why integers." But why such big integers?
-A u64 maxes out at about `1.8 × 10^19`. That's barely enough to hold a single ETH whale's balance in wei. Some token amounts can be even larger. We need more bits.
+A u64 maxes out at about `1.8 × 10^19`, which is only around 18 ETH once you count it in wei. Balances alone already need more than that.
 
-But the deeper reason is this: Ethereum's word size matches its hash size.
-The EVM uses a hash function called Keccak256. You feed it any input — a transaction, a contract's bytecode, a storage key — and it always spits out exactly 256 bits. Change one byte of the input and the output looks completely different. You can't reverse it, and it's practically impossible to find two inputs that produce the same output.
+But the size of balances isn't really the interesting reason. The deeper one is that the EVM's word size lines up with the things it has to compute on. The [Yellow Paper](https://ethereum.github.io/yellowpaper/paper.pdf) says the 256-bit word was chosen <i>"to facilitate the Keccak-256 hash scheme and elliptic-curve computations"</i> — so two things drove it: hashing and cryptography.
 
-The EVM uses it everywhere. Contract addresses, storage slot locations, transaction IDs, Merkle trees in block headers. If something needs to be identified or looked up, there's a keccak256 call behind it.
-By making the native integer type also 256 bits, a hash fits in one stack slot, one storage slot, one memory word. No splitting, no padding, no special cases.
+Start with the hash. The EVM uses a function called `keccak256`. You feed it any input — a transaction, a contract's bytecode, a storage key — and it always spits out exactly 256 bits. Change one byte of the input and the output looks completely different. You can't reverse it, and it's practically impossible to find two inputs that produce the same output.
 
-Here's why that matters in practice. Every time someone swaps tokens on Uniswap, the contract needs to look up the pair's reserves. Those reserves live in a mapping. The EVM finds their storage location by hashing the token addresses with keccak256 — one hash, one 256-bit result, one slot read.
-Now imagine the EVM used 128-bit words instead. That same hash would have to be split across two slots. Every reserve lookup would need two reads instead of one. Every write would take two writes. Extra logic to stitch the halves together.
+And the EVM leans on it constantly. Storage slot locations, transaction IDs, the Merkle trees in block headers, even contract addresses (which are the last 160 bits of a `keccak256` hash). If something needs to be identified or looked up, there's usually a `keccak256` call behind it. By making the native integer type also 256 bits, a hash fits in one stack slot, one storage slot, one memory word. No splitting, no padding, no special cases.
 
-On a busy day, Uniswap alone processes tens of thousands of swaps. Multiply that overhead across every mapping access in every contract, and the cost adds up fast.
-That's the real reason U256 exists. Not just because balances can be large, but because the EVM's most fundamental operation produces 256-bit outputs. Everything is simpler when one hash equals one slot.
+Here's where it shows up in practice. Every ERC-20 token keeps balances in a mapping, something like `mapping(address => uint256) balances`. Mappings don't store their values next to each other — the EVM finds each value's slot by hashing the key together with the mapping's position. So an account's balance lives at `keccak256(account, slot)`: one hash, one 256-bit result, one slot read. A single token transfer does this twice — once for the sender, once for the recipient.
+
+If the EVM used 128-bit words, handling 256-bit hashes would require multiword operations throughout the VM. Hashes, storage addresses, and cryptographic values would no longer fit naturally into a single stack item or storage word, making the implementation and execution model more complex.
+
+That's the part I found most satisfying. U256 isn't 256 bits because balances are big — it's 256 bits because the EVM's core machinery, its hashing and its cryptography, works in 256-bit chunks, and everything is simpler when one hash equals one slot.
 
 
 
