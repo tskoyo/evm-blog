@@ -132,7 +132,7 @@ Two things define it:
  
 It's **permanent.** Whatever you write to storage stays there across transactions, across blocks, indefinitely. This is where a token contract remembers that you own 50 tokens so it's still true tomorrow.
  
-It's **expensive.** This is the part that surprised me most. Writing a fresh value to storage costs on the order of 20,000 gas — versus a handful for a stack operation. That's not arbitrary: a storage value has to be carried by every node on the network, forever. You're not paying for a computation, you're paying for permanence.
+It's **expensive.** This is the part that surprised me most. Writing a fresh value to storage costs on the order of 20,000 gas — versus a handful for a stack operation. That's not arbitrary: a storage value has to be carried by every node on the network, forever. So the thing here is that we're not paying for a computation, but for permanence.
  
 The classic example is a token balance. An ERC-20 keeps balances in `mapping(address => uint256) balances`, and that mapping lives in storage. When you do `balances[alice] = 50`, that's a storage write; when you read `balances[alice]`, that's a storage read. Those are the operations that survive — and the ones that cost real gas.
  
